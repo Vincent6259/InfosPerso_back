@@ -11,7 +11,6 @@ import { FriendDto } from './dto/friendInterface';
 import { confidentiality, friendship, Prisma, user_data } from '@prisma/client';
 import { getLevel } from './confidentiality_array';
 import { PatchConfidentialityDto } from './dto/patch-confidentiality.dto';
-import { findFriendDto } from './dto/findOne.dto';
 import { PatchFriendConfidentialityResult } from './dto/updateFriendInterface';
 import { NotificationService } from 'src/notification/notification.service';
 
@@ -20,7 +19,7 @@ export class FriendshipService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly friendshiprequest: FriendRequestService,
-    private readonly notification: NotificationService
+    private readonly notification: NotificationService,
   ) {}
 
   async create(
@@ -285,12 +284,6 @@ export class FriendshipService {
       (p) => !findData.some((fd) => fd.id === p.id),
     );
 
-    // Pas vraiment utile comme donnée à afficher dans la page d'ami
-    // const findTag = await this.prisma.user.findFirst({
-    //   where: { id: friendId },
-    //   select: { tag: true },
-    // });
-
     const friendData = [...findData, ...permission];
 
     return friendData;
@@ -328,7 +321,6 @@ export class FriendshipService {
       },
     });
 
-    // Récupérer la confidentiality_level qui a été modifiée
     const confidentialityUpdated =
       currentUserId === findFriendship?.user1_id
         ? result.confidentiality_level_1
@@ -342,48 +334,31 @@ export class FriendshipService {
     return { friendId, confidentiality: confidentialityUpdated };
   }
 
-  // async remove(
-  //   currentUserId: number,
-  //   tag?: string,
-  //   firstname?: string,
-  //   lastname?: string,
-  // ) {
-  //   let user2Id: number | undefined;
+  async remove(currentUserId: number, tag: string) {
+    let user2Id: number | undefined;
 
-  //   if (tag) {
-  //     const otherFriend1 = await this.prisma.user.findUnique({
-  //       where: { tag },
-  //     });
-  //     if (!otherFriend1) {
-  //       throw new BadRequestException(
-  //         `Utilisateur avec ce tag est introuvable`,
-  //       );
-  //     }
-  //     user2Id = otherFriend1.id;
-  //   } else {
-  //     const otherFriend2 = await this.prisma.user_data.findFirst({
-  //       where: {
-  //         label_id: 1,
-  //         content: lastname,
-  //         AND: {
-  //           label_id: 2,
-  //           content: firstname,
-  //         },
-  //       },
-  //     });
-  //     if (!otherFriend2) {
-  //       throw new BadRequestException(`Utilisateur introuvable`);
-  //     }
-  //     user2Id = otherFriend2.user_id;
-  //   }
+    const otherFriend1 = await this.prisma.user.findUnique({
+      where: { tag },
+    });
+    if (!otherFriend1) {
+      throw new BadRequestException(`Utilisateur avec ce tag est introuvable`);
+    }
+    user2Id = otherFriend1.id;
 
-  //   const friendship = await this.findOne(currentUserId, user2Id);
-  //   if (!friendship) {
-  //     throw new BadRequestException('Aucune amitié existante à supprimer');
-  //   }
+    const findFriendship = await this.prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { user1_id: currentUserId, user2_id: user2Id },
+          { user2_id: currentUserId, user1_id: user2Id },
+        ],
+      },
+    });
+    if (!findFriendship) {
+      throw new BadRequestException('amitié non trouvé');
+    }
 
-  //   return this.prisma.friendship.delete({
-  //     where: { id: friendship.id },
-  //   });
-  // }
+    return this.prisma.friendship.delete({
+      where: { id: findFriendship.id },
+    });
+  }
 }
