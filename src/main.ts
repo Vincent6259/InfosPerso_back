@@ -30,18 +30,9 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  const FRONT_URL = 'http://localhost:5173';
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin || origin === FRONT_URL) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
+    origin: true, // renvoie automatiquement Access-Control-Allow-Origin: <origine requête>
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
   });
   await app.listen(process.env.PORT ?? 3000);
 }
