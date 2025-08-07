@@ -1,0 +1,24 @@
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYWlsIjoiUm9iZXJ0LkZhaGV5OTlAeWFob28uY29tIiwic3ViIjoxLCJpYXQiOjE3NDQ4MTE3NDIsImV4cCI6MTgwMjM1NDE0Mn0.pfXYm9FPRdmpq5rbNgnQoHQsCuG7iCHkyGsLjN7W2CQ
+
+### Inscription d'un nouvel utilisateur
+POST http://localhost:3000/user/signUp
+Content-Type: application/json
+{
+  "email": "Jamarcus.Greenholt72@gmail.com",
+  "password": "Trt89uByV8qK"
+}
+
+### Récupération des données d'un utilisateur
+GET http://localhost:3000/user-data/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Connection d'un utilisateur
+POST http://localhost:3000/auth/signIn
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "Robert.Fahey99@yahoo.com",
+  "password": "Password123!"
+}
