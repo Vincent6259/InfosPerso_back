@@ -13,9 +13,7 @@ import { FriendshipService } from './friendship.service';
 import { AuthRequest } from 'src/authentication/authentication.guard';
 import { CreateFriendshipDto } from './dto/create-friendship.dto';
 import { FriendDto } from './dto/friendInterface';
-import { confidentiality } from '@prisma/client';
 import { PatchConfidentialityDto } from './dto/patch-confidentiality.dto';
-import { findFriendDto } from './dto/findOne.dto';
 import { PatchFriendConfidentialityResult } from './dto/updateFriendInterface';
 
 @Controller('friendship')
@@ -40,9 +38,12 @@ export class FriendshipController {
   }
 
   @Get('/:friendId')
-  async findOne(@Req() request: AuthRequest, @Param('friendId', ParseIntPipe) friendId: number) {
+  async findOne(
+    @Req() request: AuthRequest,
+    @Param('friendId', ParseIntPipe) friendId: number,
+  ) {
     const currentUserId = request.user.sub;
-    return await this.friendshipService.findOne(currentUserId, friendId );
+    return await this.friendshipService.findOne(currentUserId, friendId);
   }
 
   @Patch()
@@ -57,19 +58,9 @@ export class FriendshipController {
     );
   }
 
-  // @Delete()
-  // async remove(
-  //   @Req() req: AuthRequest,
-  //   @Body() tag?: string,
-  //   firstname?: string,
-  //   lastname?: string,
-  // ) {
-  //   const user1Id = req.user.sub;
-  //   return await this.friendshipService.remove(
-  //     user1Id,
-  //     tag,
-  //     firstname,
-  //     lastname,
-  //   );
-  // }
+  @Delete()
+  async remove(@Req() req: AuthRequest, @Body() tag: string) {
+    const currentUserId = req.user.sub;
+    return await this.friendshipService.remove(currentUserId, tag);
+  }
 }
