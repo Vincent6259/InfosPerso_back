@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id                           Int                   @id @default(autoincrement())
+  tag                          String                @unique(map: "user_tag_UNIQUE") @db.VarChar(10)
+  hashRefreshToken             String               @db.VarChar(255)
+  password                     String                @db.VarChar(255)
+  created_at                   DateTime              @default(now())
+  updated_at                   DateTime?             @updatedAt
+  card                         card[]                @relation("fk_card_user")
+  user_data                    user_data[]           @relation("fk_dataUser_user")
+  groups                       group[]               @relation("fk_group_user")
+  group_members                group_member[]        @relation("fk_groupMembers_user")
+  messages                     message[]             @relation("fk_message_user")
+  notifications                notification[]        @relation("fk_notification_user")
+  friendships_sender           friendship[]          @relation("fk_friendship_userSender")
+  friendships_receiver         friendship[]          @relation("fk_friendship_userReceiver")
+  permission_sender            permission[]          @relation("fk_permission_userSender")
+  permission_receiver          permission[]          @relation("fk_permission_userReceiver")
+  request_friendship_sender    friend_request[]      @relation("fk_friendshipRequest_userSender")
+  request_friendship_receiver  friend_request[]      @relation("fk_friendshipRequest_userReceiver")
+  request_group_sender         group_request[]       @relation("fk_groupRequest_userSender")
+  request_group_receiver       group_request[]       @relation("fk_groupRequest_userReceiver")
+  request_information_sender   information_request[] @relation("fk_informationRequest_userSender")
+  request_information_receiver information_request[] @relation("fk_informationRequest_userReceiver")
+}
+
+model friendship {
+  id                      Int             @id @default(autoincrement())
+  user1_id                Int
+  confidentiality_level_1 confidentiality
+  user2_id                Int
+  confidentiality_level_2 confidentiality
+  user_sender             user            @relation("fk_friendship_userSender", fields: [user1_id], references: [id], map: "fk_friendship_userSender")
+  user_receiver           user            @relation("fk_friendship_userReceiver", fields: [user2_id], references: [id], map: "fk_friendship_userReceiver")
+  conversation            conversation[]
+
+  @@index([user1_id, user2_id])
+  @@index([user1_id], map: "fk_friendship_user1_idx")
+  @@index([user2_id], map: "fk_friendship_user2_idx")
+}
+
+model notification {
+  id         Int       @id @default(autoincrement())
+  content    String    @db.VarChar(255)
+  is_read    Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+  user_id    Int
+  user       user      @relation("fk_notification_user", fields: [user_id], references: [id], map: "fk_notification_user1")
+
+  @@index([user_id], map: "fk_notification_user1_idx")
+}
+
+model group {
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(100)
+  description      String             @db.VarChar(255)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime?          @updatedAt
+  creator_id       Int
+  user             user               @relation("fk_group_user", fields: [creator_id], references: [id], map: "fk_group_user")
+  group_members    group_member[]
+  group_permission group_permission[]
+  group_request    group_request[]
+  conversation     conversation[]
+
+  @@index([creator_id], map: "fk_group_user_idx")
+}
+
+model card {
+  id              Int             @id @default(autoincrement())
+  name            String          @db.VarChar(45)
+  confidentiality confidentiality
+  created_at      DateTime        @default(now())
+  updated_at      DateTime?       @updatedAt
+  user_id         Int
+  cardcode_id     Int
+  cardcode        cardcode        @relation(fields: [cardcode_id], references: [id], map: "fk_card_cardcode")
+  user            user            @relation("fk_card_user", fields: [user_id], references: [id], map: "fk_card_user")
+  dataset         dataset[]
+  permission      permission[]
+
+  @@index([cardcode_id], map: "fk_card_cardcode_idx")
+  @@index([user_id], map: "fk_card_user_idx")
+}
+
+model cardcode {
+  id         Int       @id @default(autoincrement())
+  code       String    @db.MediumText
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+  card       card[]
+}
+
+model user_data {
+  id                  Int                   @id @default(autoincrement())
+  content             String                @db.VarChar(255)
+  confidentiality     confidentiality
+  created_at          DateTime              @default(now())
+  updated_at          DateTime?             @updatedAt
+  user_id             Int
+  label_id            Int
+  user                user                  @relation("fk_dataUser_user", fields: [user_id], references: [id], map: "fk_dataUser_user")
+  data_label          data_label            @relation("fk_userData_dataLabel", fields: [label_id], references: [id], map: "fk_userData_dataLabel")
+  dataset             dataset[]
+  permission          permission[]
+  information_request information_request[]
+
+  @@unique([user_id, label_id])
+  @@index([user_id], map: "fk_data_user_idx")
+}
+
+model data_label {
+  id               Int                @id @default(autoincrement())
+  label            String             @db.VarChar(100)
+  user_data        user_data[]        @relation("fk_userData_dataLabel")
+  group_permission group_permission[]
+}
+
+model dataset {
+  id           Int       @id @default(autoincrement())
+  slot         Int       @db.UnsignedInt
+  created_at   DateTime  @default(now())
+  updated_at   DateTime? @updatedAt
+  user_data_id Int
+  card_id      Int
+  user_data    user_data @relation(fields: [user_data_id], references: [id], map: "fk_dataset_data1")
+  card         card      @relation(fields: [card_id], references: [id], map: "fk_dataset_card1")
+
+  @@index([card_id], map: "fk_dataset_card1_idx")
+  @@index([user_data_id], map: "fk_dataset_data1_idx")
+}
+
+model group_member {
+  group_id Int
+  user_id  Int
+  group    group @relation(fields: [group_id], references: [id], map: "fk_group_members_group1")
+  user     user  @relation("fk_groupMembers_user", fields: [user_id], references: [id], map: "fk_group_members_user")
+
+  @@id([group_id, user_id])
+  @@index([group_id], map: "fk_group_members_group1_idx")
+  @@index([user_id], map: "fk_group_members_user1_idx")
+}
+
+model group_permission {
+  group_id      Int
+  data_label_id Int
+  group         group      @relation(fields: [group_id], references: [id], map: "fk_group_permission_group1")
+  data_label    data_label @relation(fields: [data_label_id], references: [id], map: "fk_group_permission_data1")
+
+  @@id([group_id, data_label_id])
+  @@index([data_label_id], map: "fk_group_permission_data1_idx")
+  @@index([group_id], map: "fk_group_permission_group1_idx")
+}
+
+model conversation {
+  id            Int         @id @default(autoincrement())
+  created_at    DateTime    @default(now())
+  updated_at    DateTime?   @updatedAt
+  group_id      Int?
+  friendship_id Int?
+  messages      message[]
+  group         group?      @relation(fields: [group_id], references: [id], map: "fk_conversation_group1")
+  friendship    friendship? @relation(fields: [friendship_id], references: [id], map: "fk_conversation_friendship1")
+
+  @@unique([friendship_id, group_id])
+  @@index([group_id], map: "fk_conversation_group1_idx")
+}
+
+model message {
+  id              Int          @id @default(autoincrement())
+  content         String       @db.VarChar(255)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime?    @updatedAt
+  author_id       Int
+  conversation_id Int
+  user            user         @relation("fk_message_user", fields: [author_id], references: [id], map: "fk_message_user")
+  conversation    conversation @relation(fields: [conversation_id], references: [id])
+
+  @@index([author_id], map: "fk_message_author_idx")
+}
+
+model permission {
+  id            Int        @id @default(autoincrement())
+  created_at    DateTime   @default(now())
+  updated_at    DateTime?  @updatedAt
+  user_data_id  Int?
+  sender_id     Int
+  receiver_id   Int
+  card_id       Int?
+  card          card?      @relation(fields: [card_id], references: [id], map: "fk_permission_card1")
+  user_data     user_data? @relation(fields: [user_data_id], references: [id], map: "fk_permission_data1")
+  user_sender   user       @relation("fk_permission_userSender", fields: [sender_id], references: [id], map: "fk_permission_userSender")
+  user_receiver user       @relation("fk_permission_userReceiver", fields: [receiver_id], references: [id], map: "fk_permission_userReceiver")
+
+  @@unique([sender_id, receiver_id, user_data_id])
+  @@index([card_id], map: "fk_permission_card1_idx")
+  @@index([user_data_id], map: "fk_permission_data1_idx")
+  @@index([sender_id], map: "fk_permission_user1_idx")
+  @@index([receiver_id], map: "fk_permission_user2_idx")
+}
+
+model friend_request {
+  id              Int             @id @default(autoincrement())
+  created_at      DateTime        @default(now())
+  updated_at      DateTime?       @updatedAt
+  sender_id       Int
+  receiver_id     Int
+  confidentiality confidentiality
+  user_sender     user            @relation("fk_friendshipRequest_userSender", fields: [sender_id], references: [id], map: "fk_friendshipRequest_userSender")
+  user_receiver   user            @relation("fk_friendshipRequest_userReceiver", fields: [receiver_id], references: [id], map: "fk_friendshipRequest_userReceiver")
+
+  @@index([sender_id], map: "fk_request_user1_idx")
+  @@index([receiver_id], map: "fk_request_user2_idx")
+}
+
+model group_request {
+  id                    Int       @id @default(autoincrement())
+  created_at            DateTime  @default(now())
+  updated_at            DateTime? @updatedAt
+  sender_id             Int
+  receiver_id           Int
+  group_id              Int
+  user_request_group_id group     @relation(fields: [group_id], references: [id], map: "fk_group_request_group_id")
+  user_sender           user      @relation("fk_groupRequest_userSender", fields: [sender_id], references: [id], map: "fk_groupRequest_userSender")
+  user_receiver         user      @relation("fk_groupRequest_userReceiver", fields: [receiver_id], references: [id], map: "fk_groupRequest_userReceiver")
+
+  @@index([group_id], map: "fk_group_request_idx")
+  @@index([sender_id], map: "fk_request_user1_idx")
+  @@index([receiver_id], map: "fk_request_user2_idx")
+}
+
+model information_request {
+  id            Int       @id @default(autoincrement())
+  created_at    DateTime  @default(now())
+  updated_at    DateTime? @updatedAt
+  sender_id     Int
+  receiver_id   Int
+  user_data_id  Int
+  user_info_id  user_data @relation(fields: [user_data_id], references: [id])
+  user_sender   user      @relation("fk_informationRequest_userSender", fields: [sender_id], references: [id], map: "fk_informationRequest_userSender")
+  user_receiver user      @relation("fk_informationRequest_userReceiver", fields: [receiver_id], references: [id], map: "fk_informationRequest_userReceiver")
+}
+
+enum confidentiality {
+  MAXIMUM
+  CRITICAL
+  MIDDLING
+  MINIMUM
+}
+
+
