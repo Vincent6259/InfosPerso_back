@@ -22,8 +22,8 @@ Projet informatique fait dans le cadre de la validation du diplôme de niveau 6 
 - NestJS  
 - Prisma  
 - Docker  
-- 
-- ---
+
+---
         
 
 ## 🚀 Installation et lancement
@@ -90,6 +90,6 @@ npx jest
 - [Linkedin](https://www.linkedin.com/in/vincent-legout-7a902b211/)
 #### Dorian CAILLAT
 - [Linkedin](https://www.linkedin.com/in/dorian-caillat-658723310/)
-#### David SPENJAARD
+#### David SPANJAARD
 - [Linkedin](https://www.linkedin.com/in/david-spanjaard-383246b0/)
         
