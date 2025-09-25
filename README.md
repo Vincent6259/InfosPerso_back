@@ -68,7 +68,7 @@ npx prisma db push
 ```bash
 npx ts-node prisma/seed/index.ts
 ```
-- Possibilité qu'il faille réisntaller argon2 :
+- Possibilité qu'il faille réinstaller argon2 :
 ```bash 
 # Désinstaller argon2
 npm uninstall argon2
