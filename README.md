@@ -57,7 +57,11 @@ npx prisma generate
 
 4. **Réinitialiser et appliquer les migrations**
 ```bash
+# Réinitialiser migrations
 npx prisma migrate reset --force
+
+# Appliquer migrations
+npx prisma db push
 ```
 
 5. **Exécuter le seed pour générer des données de dev**
