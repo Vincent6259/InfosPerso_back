@@ -36,6 +36,15 @@ npm install
 2. **Démarrer les conteneurs Docker**
 
 - Démarer l'application Docker Desktop
+- Prenez le fichier docker-compose.yaml du back-end, et mettez le à la racine du projet:
+```bash
+InfosPerso/
+├── front/
+│   └── ...
+├── back/
+│   └── ...
+└── docker-compose.yaml
+```
 - Taper la commande :
 ```bash
 docker compose up -d
