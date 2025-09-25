@@ -64,6 +64,15 @@ npx prisma migrate reset --force
 ```bash
 npx ts-node prisma/seed/index.ts
 ```
+- Possibilité qu'il faille réisntaller argon2 :
+```bash 
+# Désinstaller argon2
+npm uninstall argon2
+
+# Réinstaller avec rebuild
+npm install argon2
+npm rebuild argon2
+```
 
 6. **Démarrer le serveur en mode développement**
 ```bash
