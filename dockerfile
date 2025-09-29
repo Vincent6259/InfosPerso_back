@@ -2,7 +2,7 @@ FROM node:22.18-alpine
 
 WORKDIR /app
 
-COPY ./package*.json .
+COPY ./package.json .
 
 RUN npm i
 
@@ -10,8 +10,8 @@ COPY . .
 
 RUN npx prisma generate
 
-RUN npm build
+RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "start:prod"]
+CMD ["npm", "run", "start:prod"]
